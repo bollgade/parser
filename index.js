@@ -1,5 +1,6 @@
 (async () => {
   const axios = require('axios');
+  const request = require('request');
   const config = require('./config.json');
   const fs = require('fs');
   await (function reset() {
@@ -31,12 +32,15 @@
 
   const setArticles = (data, database) => {
     data.forEach(el => database.push(el));
-    createFile(articles[2])
+    // createFile(articles[2]);
+    database.forEach(el => {
+      createFile(el);
+    });
   };
 
   function createFile(article) {
     const id = article.id;
-    let picNum = 0;
+    let picNum = 1;
     const linkPath = article.slug;
     const title = article.title;
     const text = [`Link to the post: https://agronom.platrum.ru/wiki/page/${id}-${linkPath}`];
@@ -49,32 +53,35 @@
 
     contentBlocks.forEach(el => {
       if (el.type === 'image') {
-        // https://agronom.platrum.ru/wiki/api/article/file?file_id=9d8b66f85cd3ea8b181a6fc3ccbb2c3a&article_id=7
-        if (picNum !== 0) {
-          console.log(el.content);
+
+        let name = `${id}-${picNum}`;
+
+        if (picNum === 1) {
+          name = `${id}`;
         };
+
         picNum++;
-        fetchPhoto(urls[2], { headers: { 'file_id': el.content, 'Api-key': config['Api-key'] } }, { data: { 'artice_id': id } });
+        const url = `${urls[2]}?file_id=${el.content}&article_id=${id}&key=${config['Api-key']}`;
+        fetchPhoto(url, name);
 
       } else {
         text.push(el.content);
       }
     });
-
-    fs.writeFile(`./build/posts/${id}-${title}.txt`, text.join('\n'), (err) => {
+    fs.writeFile(`./build/posts/${id}.txt`, text.join('\n'), (err) => {
       if (err) console.error(err);
     });
   }
 
-  async function fetchPhoto(url, headers, data) {
-    const response = await axios
-      .get(url, headers, data)
-      .then((res, body) => {
-        console.log(res);
-        console.log(body);
-        fs.writeFile('hello.png')
-      });
+  async function fetchPhoto(url, name) {
+    request.get({
+      url: url,
+      encoding: 'binary',
+    }, (err, response, body) => {
+      if (err) return console.log(err);
+      fs.writeFile(`./build/imgs/${name}.png`, body, 'binary', (err) => {
+        if (err) return console.log(err);
+      })
+    })
   }
-
-
 })()
