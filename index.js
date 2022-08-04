@@ -32,7 +32,7 @@
 
   const setArticles = (data, database) => {
     data.forEach(el => database.push(el));
-    // createFile(articles[2]);
+    // console.log(database[15]);
     database.forEach(el => {
       createFile(el);
     });
@@ -43,7 +43,10 @@
     let picNum = 1;
     const linkPath = article.slug;
     const title = article.title;
-    const text = [`Link to the post: https://agronom.platrum.ru/wiki/page/${id}-${linkPath}`];
+    const text = [
+      `Link to the post: https://agronom.platrum.ru/wiki/page/${id}-${linkPath}`,
+      `Title: ${title}`
+    ];
     const contentBlocks = article['content_blocks'].map((el) => {
       return {
         content: el.content,
